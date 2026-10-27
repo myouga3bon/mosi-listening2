@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>模試リスニング 第2弾</title>
+<style>
+  :root{
+    --main:#1daacf; --main-dark:#0f7f9d;
+    --bg:#f4fafc; --card:#ffffff; --line:#cfe6ef;
+    --unsel:#e6f3fa; --unsel-line:#b9dcec;
+    --sel:#1daacf; --text:#231815; --sub:#5b6b72;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic","Meiryo",system-ui,sans-serif;line-height:1.6;
+    padding-bottom:150px}
+  .wrap{max-width:860px;margin:0 auto;padding:16px}
+  h1{font-size:clamp(22px,5vw,30px);margin:8px 0 4px;font-weight:900}
+  .lead{margin:0 0 18px;color:var(--sub);font-size:14px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+  button.track{
+    display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;
+    background:var(--unsel);border:2px solid var(--unsel-line);border-radius:14px;
+    padding:12px 14px;font:inherit;color:var(--text);min-height:64px;
+    transition:background .15s,border-color .15s,transform .05s;
+  }
+  button.track:hover{border-color:var(--main)}
+  button.track:active{transform:scale(.98)}
+  button.track .no{flex:none;width:2.2em;height:2.2em;border-radius:50%;background:#fff;border:2px solid var(--unsel-line);
+    display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--main-dark)}
+  button.track .t{display:flex;flex-direction:column}
+  button.track .t b{font-size:17px}
+  button.track .t small{color:var(--sub);font-size:12px}
+  button.track.on{background:var(--sel);border-color:var(--main-dark);color:#fff}
+  button.track.on .t small{color:#e6f7fc}
+  button.track.on .no{background:#fff;border-color:#fff}
+  .player{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:2px solid var(--line);
+    box-shadow:0 -4px 14px rgba(0,0,0,.08);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+  .player .in{max-width:860px;margin:0 auto}
+  .now{font-weight:800;margin-bottom:6px;font-size:15px}
+  .now span{color:var(--sub);font-weight:400;font-size:13px}
+  audio{width:100%}
+  .rate{display:flex;gap:6px;align-items:center;margin-top:6px;font-size:13px;color:var(--sub)}
+  .rate button{border:2px solid var(--unsel-line);background:var(--unsel);border-radius:999px;padding:2px 12px;font:inherit;cursor:pointer;color:var(--text)}
+  .rate button.on{background:var(--sel);border-color:var(--main-dark);color:#fff}
+  .note{margin-top:18px;font-size:12px;color:var(--sub)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>模試リスニング 第2弾</h1>
+  <p class="lead">聞きたい回のボタンをおすと、音声が再生されます。</p>
+
+  <div class="grid" id="grid"></div>
+
+  <p class="note">※ 再生がはじまらないときは、画面下のプレーヤーの ▶ をおしてください。</p>
+</div>
+
+<div class="player">
+  <div class="in">
+    <div class="now" id="now">ボタンをおして再生</div>
+    <audio id="audio" controls preload="none"></audio>
+    <div class="rate" id="rate">速さ：
+      <button data-r="0.8">0.8倍</button>
+      <button data-r="1" class="on">ふつう</button>
+      <button data-r="1.2">1.2倍</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// 音声ファイルは audio/ フォルダに「01.mp3」〜「12.mp3」の名前で置く
+const TRACKS = [
+  {n:1,  round:"第2回", ym:"2022年7月",  file:"audio/01.mp3"},
+  {n:2,  round:"第2回", ym:"2023年7月",  file:"audio/02.mp3"},
+  {n:3,  round:"第2回", ym:"2024年7月",  file:"audio/03.mp3"},
+  {n:4,  round:"第4回", ym:"2022年10月", file:"audio/04.mp3", memo:"雑音あり"},
+  {n:5,  round:"第4回", ym:"2023年10月", file:"audio/05.mp3"},
+  {n:6,  round:"第4回", ym:"2024年10月", file:"audio/06.mp3"},
+  {n:7,  round:"第5回", ym:"2022年11月", file:"audio/07.mp3"},
+  {n:8,  round:"第5回", ym:"2024年11月", file:"audio/08.mp3"},
+  {n:9,  round:"第6回", ym:"2023年12月", file:"audio/09.mp3"},
+  {n:10, round:"第6回", ym:"2024年12月", file:"audio/10.mp3"},
+  {n:11, round:"第7回", ym:"2022年1月",  file:"audio/11.mp3"},
+  {n:12, round:"第7回", ym:"2023年1月",  file:"audio/12.mp3"}
+];
+const grid = document.getElementById('grid');
+const audio = document.getElementById('audio');
+const now = document.getElementById('now');
+let cur = null;
+
+TRACKS.forEach(t=>{
+  const b = document.createElement('button');
+  b.className = 'track';
+  b.type = 'button';
+  b.innerHTML = `<span class="no">${t.n}</span><span class="t"><b>${t.round}　${t.ym}</b><small>${t.memo||'&nbsp;'}</small></span>`;
+  b.onclick = ()=>play(t,b);
+  grid.appendChild(b);
+});
+
+function play(t,b){
+  if(cur===b){ audio.paused ? audio.play() : audio.pause(); return; }
+  document.querySelectorAll('.track.on').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); cur=b;
+  audio.src = t.file;
+  audio.playbackRate = currentRate;
+  audio.play().catch(()=>{});
+  now.innerHTML = `${t.n}．${t.round}　${t.ym} <span>${t.memo||''}</span>`;
+}
+
+let currentRate = 1;
+document.querySelectorAll('#rate button').forEach(b=>{
+  b.onclick = ()=>{
+    currentRate = parseFloat(b.dataset.r);
+    audio.playbackRate = currentRate;
+    document.querySelectorAll('#rate button').forEach(x=>x.classList.toggle('on',x===b));
+  };
+});
+audio.addEventListener('loadedmetadata',()=>{ audio.playbackRate = currentRate; });
+</script>
+</body>
+</html>

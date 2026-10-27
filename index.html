@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>模試リスニング 第2弾</title>
+<title>模試リスニング ファースト</title>
 <style>
   :root{
     --main:#1daacf; --main-dark:#0f7f9d;
@@ -16,6 +16,10 @@
     font-family:"Hiragino Sans","Yu Gothic","Meiryo",system-ui,sans-serif;line-height:1.6;
     padding-bottom:240px}
   .wrap{max-width:860px;margin:0 auto;padding:16px}
+  .titlebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:8px 0 4px}
+  .titlebar h1{margin:0}
+  a.nav{display:inline-block;text-decoration:none;font-weight:800;font-size:15px;color:var(--main-dark);background:var(--unsel);border:2px solid var(--unsel-line);border-radius:999px;padding:5px 16px}
+  a.nav:hover{border-color:var(--main)}
   h1{font-size:clamp(22px,5vw,30px);margin:8px 0 4px;font-weight:900}
   .lead{margin:0 0 18px;color:var(--sub);font-size:14px}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
@@ -48,6 +52,38 @@
   .card.on .chip{border-color:#fff}
   .card.on .chip.cur{background:#fff;color:var(--main-dark)}
   .parts{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px;font-size:13px;color:var(--sub)}
+
+  .kbtn{margin:8px 4px 0;display:inline-flex;align-items:center;gap:6px;border:2px solid var(--unsel-line);background:#fff;color:var(--main-dark);border-radius:10px;padding:5px 14px;font:inherit;font-weight:800;font-size:14px;cursor:pointer}
+  .kbtn:hover{border-color:var(--main)}
+  .card.on .kbtn{border-color:#fff}
+  .kbtn[disabled]{opacity:.45;cursor:default}
+  /* 解説パネル */
+  .kpanel{position:fixed;left:0;right:0;top:0;bottom:var(--player-h,200px);background:var(--bg);z-index:20;overflow:auto;display:none;-webkit-overflow-scrolling:touch}
+  .kpanel.open{display:block}
+  .kin{max-width:860px;margin:0 auto;padding:12px 16px 40px}
+  .khead{position:sticky;top:0;background:var(--bg);padding:10px 0 8px;z-index:2;border-bottom:2px solid var(--line)}
+  .khead .row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .khead h2{margin:0;font-size:18px}
+  .kclose{border:2px solid var(--unsel-line);background:#fff;border-radius:10px;padding:4px 14px;font:inherit;font-weight:800;cursor:pointer;color:var(--text)}
+  .ktabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .kpart{margin-top:20px}
+  .kpart>h3{margin:0 0 4px;font-size:18px;color:var(--main-dark);border-left:6px solid var(--main);padding-left:10px}
+  .kpart>.knote{margin:0 0 8px;color:var(--sub);font-size:13px}
+  .kitem{background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin:10px 0}
+  .kitem>h4{margin:0 0 6px;font-size:16px}
+  .kl{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;padding:5px 0;border-bottom:1px dashed var(--line)}
+  .kl:last-of-type{border-bottom:0}
+  .kl .en{font-weight:600}
+  .kl .ja{color:#34454d}
+  @media(max-width:640px){.kl{grid-template-columns:1fr;gap:0}.kl .ja{padding-bottom:4px}}
+  mark{background:#fff3a8;padding:0 2px;border-radius:3px}
+  .kq{margin-top:8px;padding:6px 10px;background:var(--unsel);border-radius:10px;font-size:14px}
+  .kq .ja{color:#34454d}
+  .kans{margin-top:8px;padding:8px 10px;border-radius:10px;background:#eefaf0;border:2px solid #bfe5c6;font-size:14px}
+  .kans b{color:#1d7a35}
+  .kpt{margin-top:8px;font-size:14px;color:#34454d}
+  .kpts{margin:8px 0 0;padding-left:1.2em;font-size:14px}
+  .kdisc{margin-top:24px;font-size:12px;color:var(--sub)}
   .player{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:2px solid var(--line);
     box-shadow:0 -4px 14px rgba(0,0,0,.08);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
   .player .in{max-width:860px;margin:0 auto}
@@ -62,7 +98,10 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>模試リスニング 第2弾</h1>
+  <div class="titlebar">
+    <h1>模試リスニング ファースト</h1>
+    <a class="nav" href="second/">セカンドへ ▶</a>
+  </div>
   <p class="lead">聞きたい回のボタンをおすと、音声が再生されます。</p>
 
   <div class="grid" id="grid"></div>
@@ -70,7 +109,9 @@
   <p class="note">※ 再生がはじまらないときは、画面下のプレーヤーの ▶ をおしてください。</p>
 </div>
 
-<div class="player">
+<div class="kpanel" id="kpanel"><div class="kin" id="kin"></div></div>
+
+<div class="player" id="player">
   <div class="in">
     <div class="now" id="now">ボタンをおして再生</div>
     <audio id="audio" controls preload="none"></audio>
@@ -90,6 +131,7 @@
   </div>
 </div>
 
+<script src="explain.js"></script>
 <script>
 // 音声ファイルは audio/ フォルダに「01.mp3」〜「12.mp3」の名前で置く
 const TRACKS = [
@@ -143,6 +185,11 @@ TRACKS.forEach(t=>{
     });
     card.appendChild(row);
   }
+  const kb = document.createElement('button');
+  kb.type='button'; kb.className='kbtn'; kb.textContent='📖 解説';
+  if(typeof EXPLAIN==='undefined' || !EXPLAIN[t.n]){ kb.disabled=true; kb.title='準備中'; }
+  kb.onclick = ()=>openK(t);
+  card.appendChild(kb);
   card._t = t;
   grid.appendChild(card);
 });
@@ -197,6 +244,40 @@ document.querySelectorAll('#rate button').forEach(b=>{
   };
 });
 audio.addEventListener('loadedmetadata',()=>{ audio.playbackRate = currentRate; });
+
+// ---------- 解説パネル ----------
+const kpanel = document.getElementById('kpanel');
+const kin = document.getElementById('kin');
+const playerEl = document.getElementById('player');
+function setPH(){ document.documentElement.style.setProperty('--player-h', playerEl.offsetHeight+'px'); }
+window.addEventListener('resize',setPH); setPH();
+function esc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function hl(x){ return esc(x).replace(/⟦/g,'<mark>').replace(/⟧/g,'</mark>'); }
+function openK(t){
+  const d = EXPLAIN[t.n]; if(!d) return;
+  let h = `<div class="khead"><div class="row"><h2>${t.n}．${t.round}　${t.ym}　解説</h2><button class="kclose" type="button" onclick="closeK()">✕ 閉じる</button></div><div class="ktabs">`;
+  d.parts.forEach((p,i)=>{ h += `<button class="chip" type="button" onclick="document.getElementById('kp${i}').scrollIntoView({behavior:'smooth',block:'start'})">${esc(p.k)}</button>`; });
+  h += `</div></div>`;
+  d.parts.forEach((p,i)=>{
+    h += `<section class="kpart" id="kp${i}"><h3>${esc(p.k)}　${esc(p.title)}</h3>`;
+    if(p.note) h += `<p class="knote">${hl(p.note)}</p>`;
+    (p.items||[]).forEach(it=>{
+      h += `<div class="kitem">`;
+      if(it.no) h += `<h4>${esc(it.no)}</h4>`;
+      (it.lines||[]).forEach(l=>{ h += `<div class="kl"><div class="en">${hl(l[0])}</div><div class="ja">${hl(l[1])}</div></div>`; });
+      if(it.q) h += `<div class="kq"><b>設問</b>　${esc(it.q[0])}<div class="ja">${esc(it.q[1])}</div></div>`;
+      if(it.ans) h += `<div class="kans"><b>答え</b>　${hl(it.ans)}${it.why?`<br><b>根拠</b>　${hl(it.why)}`:''}</div>`;
+      if(it.point) h += `<div class="kpt">💡 ${hl(it.point)}</div>`;
+      if(it.points) h += `<ul class="kpts">${it.points.map(x=>`<li>${hl(x)}</li>`).join('')}</ul>`;
+      h += `</div>`;
+    });
+    h += `</section>`;
+  });
+  h += `<p class="kdisc">※ 台本・答えは「なが模試」の問題用紙PDFの台本・正答を元にしています。日本語訳はわかりやすさ重視の直訳風です。</p>`;
+  kin.innerHTML = h; kpanel.classList.add('open'); kpanel.scrollTop = 0; setPH();
+}
+function closeK(){ kpanel.classList.remove('open'); }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeK(); });
 </script>
 </body>
 </html>

@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>模試リスニング セカンド</title>
+<style>
+  :root{
+    --main:#1daacf; --main-dark:#0f7f9d;
+    --bg:#f4fafc; --card:#ffffff; --line:#cfe6ef;
+    --unsel:#e6f3fa; --unsel-line:#b9dcec;
+    --sel:#1daacf; --text:#231815; --sub:#5b6b72;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:"Hiragino Sans","Yu Gothic","Meiryo",system-ui,sans-serif;line-height:1.6;
+    padding-bottom:240px}
+  .wrap{max-width:860px;margin:0 auto;padding:16px}
+  .titlebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:8px 0 4px}
+  .titlebar h1{margin:0}
+  a.nav{display:inline-block;text-decoration:none;font-weight:800;font-size:15px;color:var(--main-dark);background:var(--unsel);border:2px solid var(--unsel-line);border-radius:999px;padding:5px 16px}
+  a.nav:hover{border-color:var(--main)}
+  h1{font-size:clamp(22px,5vw,30px);margin:8px 0 4px;font-weight:900}
+  .lead{margin:0 0 18px;color:var(--sub);font-size:14px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+  button.track{
+    display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;
+    background:var(--unsel);border:2px solid var(--unsel-line);border-radius:14px;
+    padding:12px 14px;font:inherit;color:var(--text);min-height:64px;
+    transition:background .15s,border-color .15s,transform .05s;
+  }
+  button.track:hover{border-color:var(--main)}
+  .card button.track:hover{border:0}
+  button.track:active{transform:scale(.98)}
+  button.track .no{flex:none;width:2.2em;height:2.2em;border-radius:50%;background:#fff;border:2px solid var(--unsel-line);
+    display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--main-dark)}
+  button.track .t{display:flex;flex-direction:column}
+  button.track .t b{font-size:17px}
+  button.track .t small{color:var(--sub);font-size:12px}
+  button.track.on{background:var(--sel);border-color:var(--main-dark);color:#fff}
+  button.track.on .t small{color:#e6f7fc}
+  button.track.on .no{background:#fff;border-color:#fff}
+  .card{background:var(--unsel);border:2px solid var(--unsel-line);border-radius:14px;padding:8px 10px 10px;transition:background .15s,border-color .15s}
+  .card.on{background:var(--sel);border-color:var(--main-dark);color:#fff}
+  .card button.track{background:transparent;border:0;padding:4px 4px 6px;min-height:0}
+  .card.on button.track .t small{color:#e6f7fc}
+  .card.on button.track .no{background:#fff}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 4px}
+  .chip{border:2px solid var(--unsel-line);background:#fff;color:var(--main-dark);border-radius:999px;padding:3px 12px;font:inherit;font-weight:800;font-size:14px;cursor:pointer}
+  .chip:hover{border-color:var(--main)}
+  .chip.cur{background:var(--sel);border-color:var(--main-dark);color:#fff}
+  .card.on .chip{border-color:#fff}
+  .card.on .chip.cur{background:#fff;color:var(--main-dark)}
+  .parts{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px;font-size:13px;color:var(--sub)}
+
+  .kbtn{margin:8px 4px 0;display:inline-flex;align-items:center;gap:6px;border:2px solid var(--unsel-line);background:#fff;color:var(--main-dark);border-radius:10px;padding:5px 14px;font:inherit;font-weight:800;font-size:14px;cursor:pointer}
+  .kbtn:hover{border-color:var(--main)}
+  .card.on .kbtn{border-color:#fff}
+  .kbtn[disabled]{opacity:.45;cursor:default}
+  /* 解説パネル */
+  .kpanel{position:fixed;left:0;right:0;top:0;bottom:var(--player-h,200px);background:var(--bg);z-index:20;overflow:auto;display:none;-webkit-overflow-scrolling:touch}
+  .kpanel.open{display:block}
+  .kin{max-width:860px;margin:0 auto;padding:12px 16px 40px}
+  .khead{position:sticky;top:0;background:var(--bg);padding:10px 0 8px;z-index:2;border-bottom:2px solid var(--line)}
+  .khead .row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .khead h2{margin:0;font-size:18px}
+  .kclose{border:2px solid var(--unsel-line);background:#fff;border-radius:10px;padding:4px 14px;font:inherit;font-weight:800;cursor:pointer;color:var(--text)}
+  .ktabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .kpart{margin-top:20px}
+  .kpart>h3{margin:0 0 4px;font-size:18px;color:var(--main-dark);border-left:6px solid var(--main);padding-left:10px}
+  .kpart>.knote{margin:0 0 8px;color:var(--sub);font-size:13px}
+  .kitem{background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin:10px 0}
+  .kitem>h4{margin:0 0 6px;font-size:16px}
+  .kl{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;padding:5px 0;border-bottom:1px dashed var(--line)}
+  .kl:last-of-type{border-bottom:0}
+  .kl .en{font-weight:600}
+  .kl .ja{color:#34454d}
+  @media(max-width:640px){.kl{grid-template-columns:1fr;gap:0}.kl .ja{padding-bottom:4px}}
+  mark{background:#fff3a8;padding:0 2px;border-radius:3px}
+  .kq{margin-top:8px;padding:6px 10px;background:var(--unsel);border-radius:10px;font-size:14px}
+  .kq .ja{color:#34454d}
+  .kans{margin-top:8px;padding:8px 10px;border-radius:10px;background:#eefaf0;border:2px solid #bfe5c6;font-size:14px}
+  .kans b{color:#1d7a35}
+  .kpt{margin-top:8px;font-size:14px;color:#34454d}
+  .kpts{margin:8px 0 0;padding-left:1.2em;font-size:14px}
+  .kdisc{margin-top:24px;font-size:12px;color:var(--sub)}
+  .player{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:2px solid var(--line);
+    box-shadow:0 -4px 14px rgba(0,0,0,.08);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+  .player .in{max-width:860px;margin:0 auto}
+  .now{font-weight:800;margin-bottom:6px;font-size:15px}
+  .now span{color:var(--sub);font-weight:400;font-size:13px}
+  audio{width:100%}
+  .rate{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;font-size:13px;color:var(--sub)}
+  .rate button{border:2px solid var(--unsel-line);background:var(--unsel);border-radius:999px;padding:2px 12px;font:inherit;cursor:pointer;color:var(--text)}
+  .rate button.on{background:var(--sel);border-color:var(--main-dark);color:#fff}
+  .note{margin-top:18px;font-size:12px;color:var(--sub)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="titlebar">
+    <h1>模試リスニング セカンド</h1>
+    <a class="nav" href="../">◀ ファーストへ</a>
+  </div>
+  <p class="lead">聞きたい回のボタンをおすと、音声が再生されます。</p>
+
+  <div class="grid" id="grid"></div>
+
+  <p class="note">※ 再生がはじまらないときは、画面下のプレーヤーの ▶ をおしてください。</p>
+</div>
+
+<div class="kpanel" id="kpanel"><div class="kin" id="kin"></div></div>
+
+<div class="player" id="player">
+  <div class="in">
+    <div class="now" id="now">ボタンをおして再生</div>
+    <audio id="audio" controls preload="none"></audio>
+    <div class="parts" id="parts">ここから聞く：
+      <button class="chip" data-p="0">最初から</button>
+      <button class="chip" data-p="1">⑴</button>
+      <button class="chip" data-p="2">⑵</button>
+      <button class="chip" data-p="3">⑶</button>
+    </div>
+    <div class="rate" id="rate">速さ：
+      <button data-r="1" class="on">ふつう 1.0倍</button>
+      <button data-r="1.1">やや速め 1.1倍</button>
+      <button data-r="1.2">速め 1.2倍</button>
+      <button data-r="0.8">聞き直し用 ゆっくり 0.8倍</button>
+    </div>
+  </div>
+</div>
+
+<script src="explain.js"></script>
+<script>
+// 音声ファイルは audio/ フォルダに「01.mp3」〜「12.mp3」の名前で置く
+const TRACKS = [
+  {n:1, round:"第2回", ym:"2019", file:"audio/01.mp3",
+    cue:[87.6, 232.2, 414.3]},
+  {n:2, round:"第2回", ym:"2020", file:"audio/02.mp3",
+    cue:[80.5, 190.5, 359.9]},
+  {n:3, round:"第3回", ym:"2019", file:"audio/03.mp3",
+    cue:[80.5, 230.8, 406.9]},
+  {n:4, round:"第3回", ym:"2020", file:"audio/04.mp3",
+    cue:[82.0, 196.3, 371.9]},
+  {n:5, round:"第4回", ym:"2019", file:"audio/05.mp3",
+    cue:[80.7, 218.2, 392.4]},
+  {n:6, round:"第4回", ym:"2020", file:"audio/06.mp3",
+    cue:[83.1, 195.5, 364.4]},
+  {n:7, round:"第5回", ym:"2019", file:"audio/07.mp3",
+    cue:[81.5, 212.6, 391.8]},
+  {n:8, round:"第5回", ym:"2020", file:"audio/08.mp3",
+    cue:[81.1, 199.7, 354.2]},
+  {n:9, round:"第6回", ym:"2019", file:"audio/09.mp3",
+    cue:[78.5, 206.8, 377.7]},
+  {n:10, round:"第6回", ym:"2020", file:"audio/10.mp3",
+    cue:[78.9, 192.4, 345.2]},
+  {n:11, round:"第7回", ym:"2019", file:"audio/11.mp3",
+    cue:[83.5, 218.3, 387.3]},
+  {n:12, round:"第7回", ym:"2020", file:"audio/12.mp3",
+    cue:[79.9, 190.6, 359.9]}
+];
+const grid = document.getElementById('grid');
+const audio = document.getElementById('audio');
+const now = document.getElementById('now');
+const MARK = ['⑴','⑵','⑶'];
+let cur = null;      // 再生中のトラック
+let curCard = null;
+
+TRACKS.forEach(t=>{
+  const card = document.createElement('div');
+  card.className = 'card';
+  const b = document.createElement('button');
+  b.className = 'track'; b.type = 'button';
+  b.innerHTML = `<span class="no">${t.n}</span><span class="t"><b>${t.round}　${t.ym}</b><small>${t.memo||'&nbsp;'}</small></span>`;
+  b.onclick = ()=>play(t,card,0);
+  card.appendChild(b);
+  if(t.cue){
+    const row = document.createElement('div'); row.className='chips';
+    t.cue.forEach((sec,i)=>{
+      const c = document.createElement('button');
+      c.type='button'; c.className='chip'; c.textContent=MARK[i]; c.title=MARK[i]+'から再生';
+      c.onclick = ()=>play(t,card,sec,true);
+      row.appendChild(c);
+    });
+    card.appendChild(row);
+  }
+  const kb = document.createElement('button');
+  kb.type='button'; kb.className='kbtn'; kb.textContent='📖 解説';
+  if(typeof EXPLAIN==='undefined' || !EXPLAIN[t.n]){ kb.disabled=true; kb.title='準備中'; }
+  kb.onclick = ()=>openK(t);
+  card.appendChild(kb);
+  card._t = t;
+  grid.appendChild(card);
+});
+
+function play(t,card,sec,forceStart){
+  if(cur===t && !forceStart){ audio.paused ? audio.play() : audio.pause(); return; }
+  if(cur!==t){
+    document.querySelectorAll('.card.on').forEach(x=>x.classList.remove('on'));
+    card.classList.add('on'); cur=t; curCard=card;
+    audio.src = t.file;
+    now.innerHTML = `${t.n}．${t.round}　${t.ym} <span>${t.memo||''}</span>`;
+    audio.addEventListener('loadedmetadata',function f(){
+      audio.removeEventListener('loadedmetadata',f);
+      audio.playbackRate = currentRate; audio.currentTime = sec||0; audio.play().catch(()=>{});
+    });
+    audio.load();
+  }else{
+    audio.currentTime = sec||0; audio.playbackRate = currentRate; audio.play().catch(()=>{});
+  }
+  showCur();
+}
+
+// プレーヤー側の「ここから聞く」
+document.querySelectorAll('#parts .chip').forEach(c=>{
+  c.onclick = ()=>{
+    if(!cur) return;
+    const p = parseInt(c.dataset.p);
+    const sec = p===0 ? 0 : (cur.cue ? cur.cue[p-1] : 0);
+    audio.currentTime = sec; audio.play().catch(()=>{});
+  };
+});
+
+// 今どの部分を再生中か（⑴〜⑷）を強調
+function showCur(){
+  const sec = audio.currentTime;
+  let idx = -1;
+  if(cur && cur.cue){ cur.cue.forEach((c,i)=>{ if(sec>=c-0.01) idx=i; }); }
+  document.querySelectorAll('#parts .chip').forEach(c=>{
+    const p=parseInt(c.dataset.p);
+    c.classList.toggle('cur', p>0 && p-1===idx);
+  });
+  if(curCard) curCard.querySelectorAll('.chips .chip').forEach((c,i)=>c.classList.toggle('cur',i===idx));
+}
+audio.addEventListener('timeupdate',showCur);
+
+let currentRate = 1;
+document.querySelectorAll('#rate button').forEach(b=>{
+  b.onclick = ()=>{
+    currentRate = parseFloat(b.dataset.r);
+    audio.playbackRate = currentRate;
+    document.querySelectorAll('#rate button').forEach(x=>x.classList.toggle('on',x===b));
+  };
+});
+audio.addEventListener('loadedmetadata',()=>{ audio.playbackRate = currentRate; });
+
+// ---------- 解説パネル ----------
+const kpanel = document.getElementById('kpanel');
+const kin = document.getElementById('kin');
+const playerEl = document.getElementById('player');
+function setPH(){ document.documentElement.style.setProperty('--player-h', playerEl.offsetHeight+'px'); }
+window.addEventListener('resize',setPH); setPH();
+function esc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function hl(x){ return esc(x).replace(/⟦/g,'<mark>').replace(/⟧/g,'</mark>'); }
+function openK(t){
+  const d = EXPLAIN[t.n]; if(!d) return;
+  let h = `<div class="khead"><div class="row"><h2>${t.n}．${t.round}　${t.ym}　解説</h2><button class="kclose" type="button" onclick="closeK()">✕ 閉じる</button></div><div class="ktabs">`;
+  d.parts.forEach((p,i)=>{ h += `<button class="chip" type="button" onclick="document.getElementById('kp${i}').scrollIntoView({behavior:'smooth',block:'start'})">${esc(p.k)}</button>`; });
+  h += `</div></div>`;
+  d.parts.forEach((p,i)=>{
+    h += `<section class="kpart" id="kp${i}"><h3>${esc(p.k)}　${esc(p.title)}</h3>`;
+    if(p.note) h += `<p class="knote">${hl(p.note)}</p>`;
+    (p.items||[]).forEach(it=>{
+      h += `<div class="kitem">`;
+      if(it.no) h += `<h4>${esc(it.no)}</h4>`;
+      (it.lines||[]).forEach(l=>{ h += `<div class="kl"><div class="en">${hl(l[0])}</div><div class="ja">${hl(l[1])}</div></div>`; });
+      if(it.q) h += `<div class="kq"><b>設問</b>　${esc(it.q[0])}<div class="ja">${esc(it.q[1])}</div></div>`;
+      if(it.ans) h += `<div class="kans"><b>答え</b>　${hl(it.ans)}${it.why?`<br><b>根拠</b>　${hl(it.why)}`:''}</div>`;
+      if(it.point) h += `<div class="kpt">💡 ${hl(it.point)}</div>`;
+      if(it.points) h += `<ul class="kpts">${it.points.map(x=>`<li>${hl(x)}</li>`).join('')}</ul>`;
+      h += `</div>`;
+    });
+    h += `</section>`;
+  });
+  h += `<p class="kdisc">※ 台本・答えは「なが模試」の問題用紙PDFの台本・正答を元にしています。日本語訳はわかりやすさ重視の直訳風です。</p>`;
+  kin.innerHTML = h; kpanel.classList.add('open'); kpanel.scrollTop = 0; setPH();
+}
+function closeK(){ kpanel.classList.remove('open'); }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeK(); });
+</script>
+</body>
+</html>

@@ -83,6 +83,14 @@
   .kans b{color:#1d7a35}
   .kpt{margin-top:8px;font-size:14px;color:#34454d}
   .kpts{margin:8px 0 0;padding-left:1.2em;font-size:14px}
+  .kph{display:flex;align-items:center;gap:10px;margin:0 0 4px}
+  .kph h3{flex:1;margin:0}
+  .kcue{flex:none;font-weight:800;padding:6px 12px;border-radius:12px;white-space:nowrap}
+  .kreveal{border:2px solid var(--main-dark);background:var(--sel);color:#fff;border-radius:10px;padding:5px 14px;font:inherit;font-weight:800;cursor:pointer}
+  .kreveal.on{background:#fff;color:var(--main-dark)}
+  .kin:not(.rev) .rv{display:none}
+  .kin:not(.rev) .kl{grid-template-columns:1fr}
+  .kin:not(.rev) mark{background:none;padding:0}
   .kdisc{margin-top:24px;font-size:12px;color:var(--sub)}
   .player{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:2px solid var(--line);
     box-shadow:0 -4px 14px rgba(0,0,0,.08);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
@@ -252,28 +260,39 @@ function setPH(){ document.documentElement.style.setProperty('--player-h', playe
 window.addEventListener('resize',setPH); setPH();
 function esc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function hl(x){ return esc(x).replace(/⟦/g,'<mark>').replace(/⟧/g,'</mark>'); }
+let openT = null;
 function openK(t){
   const d = EXPLAIN[t.n]; if(!d) return;
-  let h = `<div class="khead"><div class="row"><h2>${t.n}．${t.round}　${t.ym}　解説</h2><button class="kclose" type="button" onclick="closeK()">✕ 閉じる</button></div><div class="ktabs">`;
+  openT = t; kin.className = 'kin';
+  let h = `<div class="khead"><div class="row"><h2>${t.n}．${t.round}　${t.ym}　解説</h2><span><button class="kreveal" id="krev" type="button" onclick="toggleK()">解説をみる</button> <button class="kclose" type="button" onclick="closeK()">✕ 閉じる</button></span></div><div class="ktabs">`;
   d.parts.forEach((p,i)=>{ h += `<button class="chip" type="button" onclick="document.getElementById('kp${i}').scrollIntoView({behavior:'smooth',block:'start'})">${esc(p.k)}</button>`; });
   h += `</div></div>`;
   d.parts.forEach((p,i)=>{
-    h += `<section class="kpart" id="kp${i}"><h3>${esc(p.k)}　${esc(p.title)}</h3>`;
-    if(p.note) h += `<p class="knote">${hl(p.note)}</p>`;
+    h += `<section class="kpart" id="kp${i}"><div class="kph"><button class="chip kcue" type="button" onclick="playPart(${i})">▶ ${esc(p.k)}から聞く</button><h3>${esc(p.k)}　${esc(p.title)}</h3></div>`;
+    if(p.note) h += `<p class="knote">${esc(p.note.replace(/[⟦⟧]/g,''))}</p>`;
     (p.items||[]).forEach(it=>{
       h += `<div class="kitem">`;
       if(it.no) h += `<h4>${esc(it.no)}</h4>`;
-      (it.lines||[]).forEach(l=>{ h += `<div class="kl"><div class="en">${hl(l[0])}</div><div class="ja">${hl(l[1])}</div></div>`; });
-      if(it.q) h += `<div class="kq"><b>設問</b>　${esc(it.q[0])}<div class="ja">${esc(it.q[1])}</div></div>`;
-      if(it.ans) h += `<div class="kans"><b>答え</b>　${hl(it.ans)}${it.why?`<br><b>根拠</b>　${hl(it.why)}`:''}</div>`;
-      if(it.point) h += `<div class="kpt">💡 ${hl(it.point)}</div>`;
-      if(it.points) h += `<ul class="kpts">${it.points.map(x=>`<li>${hl(x)}</li>`).join('')}</ul>`;
+      (it.lines||[]).forEach(l=>{ h += `<div class="kl"><div class="en">${hl(l[0])}</div><div class="ja rv">${hl(l[1])}</div></div>`; });
+      if(it.q) h += `<div class="kq"><b>設問</b>　${esc(it.q[0])}<div class="ja rv">${esc(it.q[1])}</div></div>`;
+      if(it.ans) h += `<div class="kans rv"><b>答え</b>　${hl(it.ans)}${it.why?`<br><b>根拠</b>　${hl(it.why)}`:''}</div>`;
+      if(it.point) h += `<div class="kpt rv">💡 ${hl(it.point)}</div>`;
+      if(it.points) h += `<ul class="kpts rv">${it.points.map(x=>`<li>${hl(x)}</li>`).join('')}</ul>`;
       h += `</div>`;
     });
     h += `</section>`;
   });
   h += `<p class="kdisc">※ 台本・答えは「なが模試」の問題用紙PDFの台本・正答を元にしています。日本語訳はわかりやすさ重視の直訳風です。</p>`;
   kin.innerHTML = h; kpanel.classList.add('open'); kpanel.scrollTop = 0; setPH();
+}
+function toggleK(){
+  const on = kin.classList.toggle('rev');
+  const b = document.getElementById('krev'); b.textContent = on ? '解説をかくす' : '解説をみる'; b.classList.toggle('on',on);
+}
+function playPart(i){
+  if(!openT || !openT.cue || openT.cue[i]==null) return;
+  const card = [...grid.children].find(c=>c._t===openT);
+  play(openT, card, openT.cue[i], true);
 }
 function closeK(){ kpanel.classList.remove('open'); }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeK(); });
